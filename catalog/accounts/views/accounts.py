@@ -11,18 +11,24 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 from ..forms import RegisterForm, ProfileUpdateForm, RegisterFormNoCaptcha, LoginForm
 from ..models import Profile
 from utils.email import send_email_confirm
 from products.models import Cart, Product, CartItem
 from ..serializers.profile_serializers import ProfileSerializer, UserSerializer
+from ..serializers.register_form_serializer import RegisterFormSerializer
 from utils.email import send_email_confirm
 
 class AccountViewSet(ViewSet):
-    permission_classes =  AllowAny
+
+    permission_classes =  [AllowAny]
+    serializer_class = UserSerializer
     
-    @action(detail=True, methods=['post'])
+    
+    @extend_schema(request=RegisterFormSerializer, responses={201:OpenApiTypes.OBJECT, 400:OpenApiTypes.OBJECT})
+    @action(detail=False, methods=['post'])
     def register(self,request):
         form = RegisterForm(request.data)
     
@@ -37,7 +43,7 @@ class AccountViewSet(ViewSet):
         else:
             return Response({"errors":form.errors}, status=400)
     
-    @action(detail=True, methods=["post"])
+    @action(detail=False, methods=["post"])
     def login_view(self, request):
         form = LoginForm(request.data)
         
@@ -63,20 +69,20 @@ class AccountViewSet(ViewSet):
 
             return Response({"eror":'Incorrect login or password'}, status=400)
         
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def logout_view(self, request):
         logout(request)
         
         return Response({'message':'Successful logout!'}, status=200)
     
-    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def profile_view(self, request):
         profile = request.user.profile
         data = ProfileSerializer(profile).data
         
         return Response({"results":data}, status=200)
     
-    @action(detail=True, methods=['put'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
     def edit_profile(self, request):
         profile = request.user.profile
         form = ProfileUpdateForm(request.data, request.FILES, user=request.user)
@@ -98,7 +104,7 @@ class AccountViewSet(ViewSet):
         else:
             return Response(form.error, status=400)
         
-    @action(detail=True, methods=["get"])
+    @action(detail=False, methods=["get"])
     def confirm_email(self, request):
         user_id = request.GET.get("user")
         new_email = request.GET.get("email")

@@ -3,10 +3,11 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from captcha.fields import CaptchaField
+from accounts.serializers.captcha_field_serializer import CaptchaFieldSerializer
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField()
-    captcha = CaptchaField()
+    captcha = CaptchaFieldSerializer()
     
     class Meta:
         model = User

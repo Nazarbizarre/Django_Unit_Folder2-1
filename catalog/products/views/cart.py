@@ -1,18 +1,33 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
-from rest_framework.viewsets import ReadOnlyModelViewset, ViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema_view, extend_schema
+
 
 from utils.email import send_order_confirmation_email
-from .. models import Cart, CartItem, Product, OrderItem, Payment, Order
-from ..serializers.cart_serializers import CartSerializer, CartItemSerializer
-from ..serializers.product_serializers import ProductSerializer
-from ..forms import OrderCreateForm
+from products.models import Cart, CartItem, Product, OrderItem, Payment, Order
+from products.serializers.cart_serializers import CartSerializer, CartItemSerializer
+from products.serializers.product_serializers import ProductSerializer
+from products.forms import OrderCreateForm
+
+@extend_schema_view(
+    add=extend_schema(
+        description="""
+        Create a cart item
+        
+        -product_id:Product's id
+        """
+    )
+)
 
 
 class CartViewSet(ViewSet):
-    @action(detail=True, methods=["post"], url_path="add-product<product_id>/")
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    
+    @action(detail=True, methods=["post"], url_path="add-product")
     def add(self, request, product_id=None):
         product = get_object_or_404(Product, id=product_id)
         if request.user.is_authenticatied:
@@ -27,8 +42,8 @@ class CartViewSet(ViewSet):
             cart[str(product_id)] = cart.get(str(product_id), default=0) +1
         return Response({"message": f"Product with id {product_id} added"}, status=200)
     
-    @action(detail=False, methods=['get'], url_path="get-cart-items/")
-    def detail(self, request):
+    @action(detail=False, methods=['get'], url_path="get-cart-items")
+    def items(self, request):
         if request.user.is_authenticated:
             cart = request.user.cart
             return Response(CartSerializer(cart).data)
@@ -48,9 +63,9 @@ class CartViewSet(ViewSet):
                     "cart":None,
                 })
                 total += item_total
-            return Response({"user":request.user, "created_at":None, "items":items, "total":total})
+            return Response({"user":None, "created_at":None, "items":items, "total":total})
     
-    @action(detail=False, methods=['post'], url_path='cart-checkout/')
+    @action(detail=False, methods=['post'], url_path='cart-checkout')
     def checkout(self, request):
         if request.user.is_authenticated:
             cart = request.user.cart

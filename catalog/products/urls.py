@@ -2,13 +2,15 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views.views import index, about, product_details, cart_add, cart_detail, cart_delete, checkout
-from .views.product import ProductViewSet
-from .views.category import CategoryViewSet
+from products.views.product import ProductViewSet
+from products.views.category import CategoryViewSet
+from products.views.cart import CartViewSet
 
 app_name = 'products'
 router = DefaultRouter()
 router.register(r"products", viewset=ProductViewSet)
 router.register(r"categories", viewset=CategoryViewSet)
+router.register(r"cart", viewset=CartViewSet)
 
 urlpatterns = [
     path('', index, name='index'),

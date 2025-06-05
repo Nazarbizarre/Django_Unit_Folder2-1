@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field, OpenApiTypes
+import json
 
 from ..models import Product, Category
 
@@ -14,6 +15,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['name',
                 'description',
                 'price',
+                'stock',
                 'available',
                 'category',
                 'nomenclature',
@@ -28,25 +30,36 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_discount_price(self, obj):
         return obj.discount_price
     
-    def clean_price(self, value):
+    def validate_price(self, value):
         if value < 0:
-            return serializers.ValidationError('The price should be higher than 0')
-        else:
-            return value
+            raise serializers.ValidationError('The price should be higher than 0')
+        return value
         
-    def clean_stock(self, value):
+    def validate_stock(self, value):
         if value < 0:
-            return serializers.ValidationError('The stock should be higher than 0')
-        else:
-            return value
+            raise serializers.ValidationError('The stock should be higher than 0')
+        return value
     
-    def clean_description(self, value):
+    def validate_description(self, value):
         if isinstance(value,str):
             return value
-        else:
-            return serializers.ValidationError('Description must be text')
+        raise serializers.ValidationError('Description must be text')
     
-    def clean_category(delf, value):
+    def validate_category(self, value):
+        print(isinstance(value, int))
         if not (isinstance(value, int)) or not (isinstance(value, Category)):
-            return serializers.ValidationError("Category must be int or Category instance")
+            raise serializers.ValidationError("Category must be int or Category instance")
+        return value
 
+    def validate_discount(self, value):
+        if value < 0:
+            raise serializers.ValidationError('The discount should be higher than 0')
+        return value
+
+    def validate_attributes(self, value):
+        if not value:
+            return value
+        try:
+            return json.loads(value)
+        except Exception:
+            raise serializers.ValidationError('Attributes must be a valid JSON')

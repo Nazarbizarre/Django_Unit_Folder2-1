@@ -1,6 +1,6 @@
 import pytest
 
-from products.models import Category, Product, Order
+from products.models import Category, Product, Order, OrderItem
 
 
 @pytest.fixture
@@ -29,10 +29,28 @@ def product_with_discount(category):
     )
 
 @pytest.fixture
-def order():
-    return Order.objects.create(
+def order(user, product, product_with_discount):
+    order_ = Order.objects.create(
         contact_name="test_name", 
         contact_email="example@example.com",
         contact_phone="+380663831118", 
         address="5 Avenue",
     )
+    
+    OrderItem.objects.create(
+        order = order_,
+        product = product_with_discount,
+        price = 100
+    )
+    
+    OrderItem.objects.create(
+        order = order_,
+        product = product_with_discount,
+        price = 90,
+        amount = 3
+    )
+    
+    return order_
+    
+    
+    

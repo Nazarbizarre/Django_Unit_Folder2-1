@@ -3,6 +3,7 @@ import pytest
 
 import pytest_check as check
 from products.serializers.product_serializers import ProductSerializer
+from products.serializers.order_serializers import OrderSerializer
 
 from .fixtures import category, product_with_discount, product, order
 
@@ -53,4 +54,65 @@ def test_product_serializer_invalid(category):
     assert 'A valid number is required.' in serializer.errors["rating"]
     for field in data.keys():
         assert field in serializer.errors
+    
+@pytest.mark.django_db
+def test_product_serializer_read_only(category):
+    data = {
+        "name": "test_name",
+        "description": "test_description",
+        "stock":3,
+        "price":100,
+        "available": True,
+        "category": category,
+        "nomenclature":"test_nomenclature",
+        "rating":2,
+        "discount":10,
+        "attributes": {}
+    }
+    
+    serializer = ProductSerializer(data=data)
+    
+    assert serializer.is_valid()
+    assert 'category' not in serializer.data.keys()
+    
+@pytest.mark.django_db
+def test_product_serializer_method_field(product_with_discount):
+    serializer = ProductSerializer(product_with_discount)
+    
+    assert serializer.data["discount_price"] == product_with_discount.discount_price
+    
+    assert serializer.data["discount_price"] == 90
+
+@pytest.mark.django_db
+def test_order_serializer_read_only(user, order):
+    data = {
+        "user":user.id,
+        "contact_name":"test_name", 
+        "contact_email":"example.example@gmail.com",
+        "contact_phone":"+380663831118", 
+        "address":"5 Avenue"
+    }
+    
+    serializer = OrderSerializer(data=data)
+    
+    assert serializer.is_valid()
+    assert 'items' not in serializer.validated_data
+    
+    serializer = OrderSerializer(order)
+    
+
+    assert 'items' in serializer.data
+    
+@pytest.mark.django_db
+def test_order_serializer_items(order):
+    serializer = OrderSerializer(order)
+    items = serializer.data["items"]
+
+    assert len(items) == 2
+    
+    
+    
+    
+    
+    
     

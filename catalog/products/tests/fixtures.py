@@ -10,10 +10,13 @@ def category():
     )
 
 @pytest.fixture
-def product(category):
+def product():
+    test_category = Category.objects.create(
+        name="test_category2"
+    )
     return Product.objects.create(
         name="test-product", 
-        category=category,
+        category=test_category,
         nomenclature="test_nomenclature", 
         price=100, 
     )

@@ -30,6 +30,8 @@ jobs:
       run: |
         echo "SECRET_KEY=${{secrets.SECRET_KEY}}" >> .env
     - name: Run Tests
+      env:
+          DJANGO_SETTINGS_MODULE: catalog.settings
       run: |
         pytest -s
     - name: Build Docker Image

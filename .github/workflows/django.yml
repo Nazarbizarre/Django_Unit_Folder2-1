@@ -28,7 +28,7 @@ jobs:
         pip install -r requirements.txt
     - name: Export .env variables
       run: |
-        echo "SECRET_KEY=${{ vars.SECRET_KEY }}" >> .env
+        echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
     - name: Run Tests
       env:
           DJANGO_SETTINGS_MODULE: catalog.settings

@@ -12,3 +12,9 @@ def user():
 def api_client():
     apiclient = APIClient()
     return apiclient
+
+@pytest.fixture
+def super_user():
+    return django.contrib.auth.models.User.objects.create_superuser(
+        username="restsuperuser", password="password_test_super_user"
+    )

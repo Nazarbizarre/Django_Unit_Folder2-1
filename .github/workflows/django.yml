@@ -33,6 +33,7 @@ jobs:
       env:
           DJANGO_SETTINGS_MODULE: catalog.settings
       run: |
+        cd catalog/
         pytest -s
     - name: Build Docker Image
       run: |
